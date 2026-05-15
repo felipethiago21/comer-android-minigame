@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comer Android - Minigame</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Inter, Arial, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #1f2937 0%, #020617 55%, #000 100%);
+      color: #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .app {
+      width: min(1100px, 96vw);
+      height: min(720px, 92vh);
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 18px;
+      padding: 18px;
+    }
+
+    .panel, .game-wrap {
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      background: rgba(15, 23, 42, 0.82);
+      box-shadow: 0 24px 80px rgba(0,0,0,.45);
+      border-radius: 24px;
+      backdrop-filter: blur(14px);
+    }
+
+    .panel {
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo {
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #22c55e, #84cc16);
+      color: #052e16;
+      font-size: 28px;
+      box-shadow: 0 0 30px rgba(34, 197, 94, .35);
+    }
+
+    h1 {
+      font-size: 20px;
+      line-height: 1.1;
+      letter-spacing: -.03em;
+    }
+
+    .subtitle {
+      margin-top: 4px;
+      color: #94a3b8;
+      font-size: 12px;
+    }
+
+    .status-card {
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 18px;
+      padding: 14px;
+      background: rgba(2, 6, 23, .48);
+    }
+
+    .label {
+      color: #94a3b8;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      margin-bottom: 8px;
+    }
+
+    .big {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -.05em;
+    }
+
+    .danger {
+      color: #fb7185;
+    }
+
+    .good {
+      color: #86efac;
+    }
+
+    .bar {
+      width: 100%;
+      height: 10px;
+      border-radius: 99px;
+      background: #020617;
+      overflow: hidden;
+      border: 1px solid rgba(148, 163, 184, .16);
+      margin-top: 10px;
+    }
+
+    .bar span {
+      display: block;
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #22c55e, #eab308, #ef4444);
+      border-radius: 99px;
+      transition: width .15s linear;
+    }
+
+    .analysts {
+      display: grid;
+      gap: 8px;
+    }
+
+    .person {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(30, 41, 59, .62);
+      border: 1px solid rgba(148, 163, 184, .12);
+    }
+
+    .person strong {
+      font-size: 13px;
+    }
+
+    .badge {
+      color: #fecaca;
+      font-size: 11px;
+      background: rgba(239, 68, 68, .14);
+      border: 1px solid rgba(239, 68, 68, .22);
+      padding: 4px 8px;
+      border-radius: 999px;
+    }
+
+    .controls {
+      margin-top: auto;
+      display: grid;
+      gap: 10px;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+      border-radius: 16px;
+      padding: 13px 14px;
+      color: #052e16;
+      font-weight: 800;
+      background: linear-gradient(135deg, #86efac, #22c55e);
+      box-shadow: 0 12px 35px rgba(34, 197, 94, .22);
+      transition: transform .12s ease, filter .12s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.06);
+    }
+
+    .hint {
+      color: #94a3b8;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .game-wrap {
+      position: relative;
+      overflow: hidden;
+      padding: 14px;
+    }
+
+    .topbar {
+      height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 8px 12px;
+    }
+
+    .topbar-title {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .topbar-title strong {
+      font-size: 18px;
+    }
+
+    .topbar-title span {
+      color: #94a3b8;
+      font-size: 12px;
+    }
+
+    .score-pill {
+      display: flex;
+      gap: 8px;
+    }
+
+    .pill {
+      padding: 9px 12px;
+      border-radius: 999px;
+      background: rgba(2, 6, 23, .5);
+      border: 1px solid rgba(148, 163, 184, .16);
+      font-size: 12px;
+      color: #cbd5e1;
+    }
+
+    #game {
+      position: relative;
+      width: 100%;
+      height: calc(100% - 58px);
+      border-radius: 20px;
+      overflow: hidden;
+      background:
+        linear-gradient(rgba(148, 163, 184, .06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148, 163, 184, .06) 1px, transparent 1px),
+        radial-gradient(circle at 20% 20%, rgba(34, 197, 94, .16), transparent 25%),
+        radial-gradient(circle at 80% 70%, rgba(59, 130, 246, .15), transparent 25%),
+        #020617;
+      background-size: 42px 42px, 42px 42px, auto, auto, auto;
+      border: 1px solid rgba(148, 163, 184, .18);
+    }
+
+    .player, .enemy, .food, .popup {
+      position: absolute;
+      user-select: none;
+      will-change: transform;
+    }
+
+    .player {
+      width: 52px;
+      height: 52px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      font-size: 30px;
+      background: rgba(34, 197, 94, .17);
+      border: 1px solid rgba(134, 239, 172, .6);
+      box-shadow: 0 0 34px rgba(34, 197, 94, .28);
+      z-index: 5;
+    }
+
+    .enemy {
+      width: 62px;
+      height: 62px;
+      border-radius: 18px;
+      background: rgba(248, 113, 113, .12);
+      border: 1px solid rgba(248, 113, 113, .35);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      z-index: 4;
+      box-shadow: 0 0 24px rgba(239, 68, 68, .16);
+    }
+
+    .enemy .emoji {
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .enemy .name {
+      font-size: 10px;
+      color: #fecaca;
+      font-weight: 800;
+    }
+
+    .food {
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      background: rgba(250, 204, 21, .16);
+      border: 1px solid rgba(250, 204, 21, .35);
+      box-shadow: 0 0 22px rgba(250, 204, 21, .18);
+      z-index: 3;
+    }
+
+    .popup {
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: min(480px, 90%);
+      background: rgba(15, 23, 42, .94);
+      border: 1px solid rgba(148, 163, 184, .28);
+      border-radius: 28px;
+      padding: 28px;
+      text-align: center;
+      box-shadow: 0 30px 120px rgba(0,0,0,.65);
+      z-index: 20;
+    }
+
+    .popup h2 {
+      font-size: 32px;
+      letter-spacing: -.05em;
+      margin-bottom: 10px;
+    }
+
+    .popup p {
+      color: #cbd5e1;
+      line-height: 1.5;
+      margin-bottom: 18px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .toast {
+      position: absolute;
+      left: 16px;
+      bottom: 16px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(2, 6, 23, .74);
+      border: 1px solid rgba(148, 163, 184, .16);
+      color: #cbd5e1;
+      font-size: 12px;
+      z-index: 12;
+    }
+
+    @media (max-width: 860px) {
+      body {
+        overflow: auto;
+      }
+
+      .app {
+        height: auto;
+        grid-template-columns: 1fr;
+      }
+
+      .game-wrap {
+        height: 620px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <aside class="panel">
+      <div class="brand">
+        <div class="logo">🤖</div>
+        <div>
+          <h1>Comer Android - Minigame</h1>
+          <div class="subtitle">Operação almoço 12h</div>
+        </div>
+      </div>
+
+      <section class="status-card">
+        <div class="label">Status do Android</div>
+        <div id="statusText" class="big good">VIVO</div>
+        <div class="bar"><span id="lifeBar"></span></div>
+      </section>
+
+      <section class="status-card">
+        <div class="label">Missão</div>
+        <p class="hint">Sobreviva até 13h sem ser capturado pelos analistas famintos. Colete cafés para ganhar pontos e energia.</p>
+      </section>
+
+      <section class="status-card">
+        <div class="label">Analistas no almoço</div>
+        <div class="analysts">
+          <div class="person"><strong>Thiago</strong><span class="badge">caçando</span></div>
+          <div class="person"><strong>Paulo</strong><span class="badge">caçando</span></div>
+          <div class="person"><strong>Jeff</strong><span class="badge">caçando</span></div>
+          <div class="person"><strong>Silvio</strong><span class="badge">caçando</span></div>
+          <div class="person"><strong>Jhon</strong><span class="badge">caçando</span></div>
+        </div>
+      </section>
+
+      <div class="controls">
+        <button id="startBtn">Iniciar operação</button>
+        <p class="hint">Controles: W A S D ou setas do teclado. No celular, arraste o dedo na área do jogo.</p>
+      </div>
+    </aside>
+
+    <section class="game-wrap">
+      <div class="topbar">
+        <div class="topbar-title">
+          <strong>Central de Caça ao Android</strong>
+          <span>Sobreviva ao almoço dos analistas até 13h</span>
+        </div>
+        <div class="score-pill">
+          <div class="pill">Hora: <strong id="clock">12:00</strong></div>
+          <div class="pill">Pontos: <strong id="score">0</strong></div>
+          <div class="pill">Recorde: <strong id="best">0</strong></div>
+        </div>
+      </div>
+
+      <div id="game">
+        <div id="player" class="player">🤖</div>
+        <div id="popup" class="popup">
+          <h2>Hora do almoço!</h2>
+          <p>Você é o Android. Fuja dos analistas de sistemas até dar 13h. Agora eles estão mais rápidos, mais famintos e o contato causa mais dano.</p>
+          <button id="popupBtn">Começar</button>
+        </div>
+        <div class="toast">Sistema SGCA iniciado: risco de consumo elevado.</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const game = document.getElementById('game');
+    const playerEl = document.getElementById('player');
+    const startBtn = document.getElementById('startBtn');
+    const popup = document.getElementById('popup');
+    const popupBtn = document.getElementById('popupBtn');
+    const scoreEl = document.getElementById('score');
+    const bestEl = document.getElementById('best');
+    const clockEl = document.getElementById('clock');
+    const statusText = document.getElementById('statusText');
+    const lifeBar = document.getElementById('lifeBar');
+
+    const analystNames = ['Thiago', 'Paulo', 'Jeff', 'Silvio', 'Jhon'];
+    const enemyEmojis = ['👨‍💻', '🧑‍💻', '👨‍💼', '🕵️', '🥷'];
+
+    let running = false;
+    let animationId = null;
+    let lastTime = 0;
+    let score = 0;
+    let survival = 0;
+    let life = 100;
+    let player = { x: 80, y: 80, size: 52, speed: 305 };
+    let enemies = [];
+    let foods = [];
+    let keys = {};
+    let pointer = { active: false, x: 0, y: 0 };
+    let best = Number(localStorage.getItem('androidLunchBest') || 0);
+    bestEl.textContent = best;
+
+    function bounds() {
+      return game.getBoundingClientRect();
+    }
+
+    function rand(min, max) {
+      return Math.random() * (max - min) + min;
+    }
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function distance(a, b) {
+      const ax = a.x + a.size / 2;
+      const ay = a.y + a.size / 2;
+      const bx = b.x + b.size / 2;
+      const by = b.y + b.size / 2;
+      return Math.hypot(ax - bx, ay - by);
+    }
+
+    function setPosition(el, x, y) {
+      el.style.transform = `translate(${x}px, ${y}px)`;
+    }
+
+    function createEnemy(name, index) {
+      const el = document.createElement('div');
+      el.className = 'enemy';
+      el.innerHTML = `<span class="emoji">${enemyEmojis[index]}</span><span class="name">${name}</span>`;
+      game.appendChild(el);
+
+      const b = bounds();
+      const side = Math.floor(rand(0, 4));
+      let x = 0;
+      let y = 0;
+
+      if (side === 0) { x = rand(0, b.width - 62); y = -70; }
+      if (side === 1) { x = b.width + 70; y = rand(0, b.height - 62); }
+      if (side === 2) { x = rand(0, b.width - 62); y = b.height + 70; }
+      if (side === 3) { x = -70; y = rand(0, b.height - 62); }
+
+      return {
+        name,
+        el,
+        x,
+        y,
+        size: 62,
+        speed: 122 + index * 18,
+        chaos: rand(-1, 1)
+      };
+    }
+
+    function createFood() {
+      const el = document.createElement('div');
+      el.className = 'food';
+      el.textContent = Math.random() > .5 ? '☕' : '🍔';
+      game.appendChild(el);
+      const b = bounds();
+      const food = {
+        el,
+        x: rand(20, b.width - 60),
+        y: rand(20, b.height - 60),
+        size: 38
+      };
+      setPosition(el, food.x, food.y);
+      foods.push(food);
+    }
+
+    function clearEntities() {
+      enemies.forEach(e => e.el.remove());
+      foods.forEach(f => f.el.remove());
+      enemies = [];
+      foods = [];
+    }
+
+    function resetGame() {
+      clearEntities();
+      const b = bounds();
+      player.x = b.width / 2 - player.size / 2;
+      player.y = b.height / 2 - player.size / 2;
+      score = 0;
+      survival = 0;
+      life = 100;
+      lastTime = 0;
+      scoreEl.textContent = score;
+      clockEl.textContent = '12:00';
+      statusText.textContent = 'VIVO';
+      statusText.className = 'big good';
+      lifeBar.style.width = '100%';
+      setPosition(playerEl, player.x, player.y);
+      analystNames.forEach((name, index) => enemies.push(createEnemy(name, index)));
+      for (let i = 0; i < 3; i++) createFood();
+    }
+
+    function startGame() {
+      resetGame();
+      running = true;
+      popup.classList.add('hidden');
+      startBtn.textContent = 'Reiniciar operação';
+      cancelAnimationFrame(animationId);
+      animationId = requestAnimationFrame(loop);
+    }
+
+    function finishGame(won) {
+      running = false;
+      cancelAnimationFrame(animationId);
+      best = Math.max(best, score);
+      localStorage.setItem('androidLunchBest', best);
+      bestEl.textContent = best;
+
+      popup.classList.remove('hidden');
+      popup.querySelector('h2').textContent = won ? 'Android sobreviveu!' : 'Android virou almoço!';
+      popup.querySelector('p').textContent = won
+        ? `Missão concluída: deu 13h e o Android escapou da squad. Pontuação final: ${score}.`
+        : `A squad de analistas concluiu o almoço corporativo. Pontuação final: ${score}.`;
+      popupBtn.textContent = 'Jogar novamente';
+      statusText.textContent = won ? 'ESCAPOU' : 'COMIDO';
+      statusText.className = won ? 'big good' : 'big danger';
+    }
+
+    function updatePlayer(dt) {
+      let dx = 0;
+      let dy = 0;
+
+      if (keys.ArrowUp || keys.w) dy -= 1;
+      if (keys.ArrowDown || keys.s) dy += 1;
+      if (keys.ArrowLeft || keys.a) dx -= 1;
+      if (keys.ArrowRight || keys.d) dx += 1;
+
+      if (pointer.active) {
+        const cx = player.x + player.size / 2;
+        const cy = player.y + player.size / 2;
+        dx += (pointer.x - cx) / 120;
+        dy += (pointer.y - cy) / 120;
+      }
+
+      const len = Math.hypot(dx, dy) || 1;
+      dx /= len;
+      dy /= len;
+
+      const b = bounds();
+      player.x = clamp(player.x + dx * player.speed * dt, 0, b.width - player.size);
+      player.y = clamp(player.y + dy * player.speed * dt, 0, b.height - player.size);
+      setPosition(playerEl, player.x, player.y);
+    }
+
+    function updateEnemies(dt) {
+      const difficulty = 1 + survival / 38;
+
+      enemies.forEach((enemy, index) => {
+        const targetX = player.x + Math.sin(survival * 1.8 + index) * 80 * enemy.chaos;
+        const targetY = player.y + Math.cos(survival * 1.5 + index) * 80 * enemy.chaos;
+        const dx = targetX - enemy.x;
+        const dy = targetY - enemy.y;
+        const len = Math.hypot(dx, dy) || 1;
+        enemy.x += (dx / len) * enemy.speed * difficulty * dt;
+        enemy.y += (dy / len) * enemy.speed * difficulty * dt;
+        setPosition(enemy.el, enemy.x, enemy.y);
+
+        if (distance(player, enemy) < 50) {
+          life -= 58 * dt;
+        }
+      });
+    }
+
+    function updateFoods() {
+      foods = foods.filter(food => {
+        if (distance(player, food) < 42) {
+          score += food.el.textContent === '☕' ? 80 : 120;
+          life = clamp(life + 8, 0, 100);
+          scoreEl.textContent = score;
+          food.el.remove();
+          setTimeout(createFood, 950);
+          return false;
+        }
+        return true;
+      });
+    }
+
+    function updateClock() {
+      const minutes = Math.min(60, Math.floor(survival));
+      const fakeHour = 12 + Math.floor(minutes / 60);
+      const fakeMinute = minutes % 60;
+      clockEl.textContent = `${String(fakeHour).padStart(2, '0')}:${String(fakeMinute).padStart(2, '0')}`;
+    }
+
+    function loop(timestamp) {
+      if (!running) return;
+      if (!lastTime) lastTime = timestamp;
+      const dt = Math.min((timestamp - lastTime) / 1000, .033);
+      lastTime = timestamp;
+
+      survival += dt * 2.55;
+      score += Math.floor(dt * 8);
+      scoreEl.textContent = score;
+
+      updatePlayer(dt);
+      updateEnemies(dt);
+      updateFoods();
+      updateClock();
+
+      life = clamp(life, 0, 100);
+      lifeBar.style.width = life + '%';
+
+      if (life <= 0) {
+        finishGame(false);
+        return;
+      }
+
+      if (survival >= 60) {
+        finishGame(true);
+        return;
+      }
+
+      animationId = requestAnimationFrame(loop);
+    }
+
+    window.addEventListener('keydown', (e) => {
+      keys[e.key] = true;
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+        e.preventDefault();
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      keys[e.key] = false;
+    });
+
+    game.addEventListener('pointerdown', (e) => {
+      const rect = game.getBoundingClientRect();
+      pointer.active = true;
+      pointer.x = e.clientX - rect.left;
+      pointer.y = e.clientY - rect.top;
+    });
+
+    game.addEventListener('pointermove', (e) => {
+      if (!pointer.active) return;
+      const rect = game.getBoundingClientRect();
+      pointer.x = e.clientX - rect.left;
+      pointer.y = e.clientY - rect.top;
+    });
+
+    window.addEventListener('pointerup', () => {
+      pointer.active = false;
+    });
+
+    startBtn.addEventListener('click', startGame);
+    popupBtn.addEventListener('click', startGame);
+
+    resetGame();
+  </script>
+</body>
+</html>
